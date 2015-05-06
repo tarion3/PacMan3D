@@ -19,7 +19,7 @@ public class Pacman : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 	
-		speed = 0.2f;
+		speed = 0.18f;
 		direction = new Vector3(0,0,0);
 		warp1Translation = new Vector3 (28,0,0);
 		warp2Translation = new Vector3 (-28,0,0);
@@ -51,9 +51,13 @@ public class Pacman : MonoBehaviour {
 	void OnTriggerEnter(Collider other) {
 
 		if (other.gameObject.CompareTag ("Pellet")) {
+
 			Pickup (other, 5);
+
 		} else if (other.gameObject.CompareTag ("PowerPellet")) {
+
 			Pickup (other, 10);
+
 		} else if (other.gameObject.CompareTag ("WarpTunnel1")) {
 			transform.Translate(warp1Translation, Space.World);
 		} else if (other.gameObject.CompareTag ("WarpTunnel2")) {
@@ -63,7 +67,6 @@ public class Pacman : MonoBehaviour {
 	}
 
 	void Pickup(Collider other, int points) {
-		other.gameObject.SetActive (false);
 		count++;
 		SetCountText();
 		score += points;
