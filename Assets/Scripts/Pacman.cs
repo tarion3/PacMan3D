@@ -19,7 +19,7 @@ public class Pacman : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 	
-		speed = 0.18f;
+		speed = 0.16f;
 		direction = new Vector3(0,0,0);
 		warp1Translation = new Vector3 (28,0,0);
 		warp2Translation = new Vector3 (-28,0,0);
