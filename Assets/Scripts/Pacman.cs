@@ -1,24 +1,40 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class Pacman : MonoBehaviour {
 
-	public float speed;
-	private Vector3 direction;
-	private GameObject camera;
+	public Text countText;
+	public Text scoreText;
+	public Text winText;
 
+	private Vector3 direction;
+	private Vector3 warp1Translation;
+	private Vector3 warp2Translation;
+
+	private float speed;
+	private int count;
+	private int score;
+	
 	// Use this for initialization
 	void Start () {
 	
 		speed = 0.2f;
 		direction = new Vector3(0,0,0);
-		camera = GameObject.Find ("Main Camera");
+		warp1Translation = new Vector3 (28,0,0);
+		warp2Translation = new Vector3 (-28,0,0);
+
+		count = 0;
+		score = 0;
+
+		SetCountText();
+		SetScoreText ();
+		winText.text = "";
 
 	}
 
 	void FixedUpdate() {
 
-		// move Pac-Man along a velocity vector
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
 		
@@ -32,8 +48,37 @@ public class Pacman : MonoBehaviour {
 
 	}
 	
-	// Update is called once per frame
-	void Update () {
-	
+	void OnTriggerEnter(Collider other) {
+
+		if (other.gameObject.CompareTag ("Pellet")) {
+			Pickup (other, 5);
+		} else if (other.gameObject.CompareTag ("PowerPellet")) {
+			Pickup (other, 10);
+		} else if (other.gameObject.CompareTag ("WarpTunnel1")) {
+			transform.Translate(warp1Translation, Space.World);
+		} else if (other.gameObject.CompareTag ("WarpTunnel2")) {
+			transform.Translate(warp2Translation, Space.World);
+		}
+
 	}
+
+	void Pickup(Collider other, int points) {
+		other.gameObject.SetActive (false);
+		count++;
+		SetCountText();
+		score += points;
+		SetScoreText();
+	}
+	
+	void SetCountText() {
+		countText.text = "Count: " + count.ToString();
+		if (count >= 156) {
+			winText.text = "You Win!";
+		}
+	}
+
+	void SetScoreText() {
+		scoreText.text = "Score: " + score.ToString();
+	}
+	
 }
