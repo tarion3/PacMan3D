@@ -3,37 +3,26 @@ using System.Collections;
 
 public class PowerPelletController : MonoBehaviour {
 
-	public AudioClip pelletEatAudio;
-
-	private MeshRenderer pelletRenderer;
-	private SphereCollider pelletCollider;
-	private AudioSource pelletAudio;
+	private GameController gameController;
 
 	// Use this for initialization
 	void Start () {
 		
-		pelletRenderer = GetComponent<MeshRenderer> ();
-		pelletCollider = GetComponent<SphereCollider> ();
-		pelletAudio = GetComponent<AudioSource> ();
+		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 
 	}
 
-	void FixedUpdate() {
-
-	}
-	
 	void OnTriggerEnter(Collider other) {
 
-		// play pellet eat audio
-		pelletAudio.clip = pelletEatAudio;
-		pelletAudio.Play();
+		if (other.gameObject.CompareTag ("PacMan")) {
 
-		// trigger game state change
-		GameObject.Find ("Game Controller").GetComponent<GameController> ().gameState = GameController.GameStates.POWERUP;
+			// trigger game state change
+			gameController.gameState = GameController.GameStates.POWERUP;
 
-		// remove pellet
-		pelletRenderer.enabled = false;
-		pelletCollider.enabled = false;
+			// remove pellet
+			this.gameObject.SetActive(false);
+
+		}
 		
 	}
 

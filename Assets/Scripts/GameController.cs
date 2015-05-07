@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class GameController : MonoBehaviour {
@@ -7,60 +8,144 @@ public class GameController : MonoBehaviour {
 	public AudioClip normalAudio;
 	public AudioClip powerUpAudio;
 
-	public enum GameStates {PREGAME, NORMAL, POWERUP, WIN, GAMEOVER};
+	public enum GameStates {PREGAME, READY, NORMAL, POWERUP, GAMEOVER};
 	public GameStates gameState;
 
-	private AudioSource gameAudio;
+	public Text countText;
+	public Text scoreText;
+	public Text livesText;
+	public Text winText;
+
+	public int count;
+	public int score;
+	public int lives;
+	private int oldCount, oldScore, oldLives, maxCount;
+
+	public AudioSource gameAudio;
 	private float audioMaxLength;
 	private float audioDuration;
+
 	private bool preGameInitComplete;
+	private bool readyInitComplete;
 	private bool normalInitComplete;
 	private bool powerUpInitComplete;
+
+	private float elapsedTime;
+	private bool skipReadyWait;
 
 	// Use this for initialization
 	void Start () {
 
 		gameAudio = GetComponent<AudioSource> ();
 		gameState = GameStates.PREGAME;
-		audioMaxLength = 5;
+
+		oldCount = 0;
+		oldScore = 0;
+		oldLives = 3;
+		count = 0;
+		score = 0;
+		lives = 3;
+		maxCount = 156;
+
+		SetCountText("0");
+		SetScoreText("0");
+		SetLivesText("3");
+		SetWinText("");
+
+		audioMaxLength = 8;
 		audioDuration = 0;
+
 		preGameInitComplete = false;
+		readyInitComplete = false;
 		normalInitComplete = false;
 		powerUpInitComplete = false;
+
+		elapsedTime = 0;
+		skipReadyWait = false;
 	
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
+
+		if (count != oldCount) {
+			SetCountText (count.ToString ());
+		}
+
+		if (score != oldScore) {
+			SetScoreText (score.ToString ());
+		}
+
+		if (lives != oldLives) {
+			SetLivesText (lives.ToString ());
+		}
+		
 		switch (gameState) {
 
 		case GameStates.PREGAME:
 
 			if (!preGameInitComplete) {
 
+				ResetGameBoard();
+
+				SetWinText("Ready?");
 				gameAudio.clip = preGameAudio;
 				gameAudio.Play();
 				preGameInitComplete = true;
 
 			} else if (!gameAudio.isPlaying) {
 
-				normalInitComplete = false;
-				gameState = GameStates.NORMAL;
+				readyInitComplete = false;
+				skipReadyWait = true;
+				gameState = GameStates.READY;
 
 			}
 
 			break;
 
+		case GameStates.READY:
+
+			if (!readyInitComplete) {
+
+				SetWinText("Ready?");
+				readyInitComplete = true;
+
+				if (skipReadyWait) {
+					skipReadyWait = false;
+					elapsedTime = 2;
+				} else {
+					elapsedTime = 0;
+				}
+
+			}
+
+			elapsedTime += Time.deltaTime;
+
+			if (elapsedTime > 2) {
+
+				elapsedTime = 0;
+				normalInitComplete = false;
+				gameState = GameStates.NORMAL;
+
+			}
+			
+			break;
+
 		case GameStates.NORMAL:
 
 			if (!normalInitComplete) {
-				
+
+				SetWinText("");
 				gameAudio.clip = normalAudio;
 				gameAudio.loop = true;
 				gameAudio.Play();
 				normalInitComplete = true;
 				
+			} else {
+
+				powerUpInitComplete = false;
+				readyInitComplete = false;
+
 			}
 
 			break;
@@ -88,6 +173,7 @@ public class GameController : MonoBehaviour {
 					// trigger game state change
 					powerUpInitComplete = false;
 					normalInitComplete = false;
+					readyInitComplete = false;
 					gameState = GameStates.NORMAL;
 					
 				}
@@ -96,15 +182,56 @@ public class GameController : MonoBehaviour {
 
 			break;
 
-		case GameStates.WIN:
-
-			break;
-
 		case GameStates.GAMEOVER:
+
+			if (count >= maxCount) {
+				SetWinText ("You Win!");
+			}
+			else {
+				SetWinText("GAME OVER");
+			}
+
+			gameAudio.Stop ();
 
 			break;
 
 		}
 
 	}
+
+	void SetCountText(string text) {
+		countText.text = "Count: " + text + " / " + maxCount.ToString();
+		if (count >= maxCount) {
+			gameState = GameStates.GAMEOVER;
+		}
+	}
+	
+	void SetScoreText(string text) {
+		scoreText.text = "Score: " + text;
+	}
+
+	void SetLivesText(string text) {
+		livesText.text = "Lives: " + text;
+	}
+	
+	void SetWinText(string text) {
+		winText.text = text;
+	}
+
+	void ResetGameBoard() {
+
+		// redisplay all pellets
+		GameObject[] pellets = GameObject.FindGameObjectsWithTag ("Pellet");
+		foreach (GameObject pellet in pellets) {
+			pellet.SetActive(true);
+		}
+
+		// redisplay all power pellets
+		GameObject[] powerPellets = GameObject.FindGameObjectsWithTag ("PowerPellet");
+		foreach (GameObject powerPellet in powerPellets) {
+			powerPellet.SetActive(true);
+		}
+
+	}
+
 }
