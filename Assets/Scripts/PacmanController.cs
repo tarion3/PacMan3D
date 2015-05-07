@@ -39,6 +39,7 @@ public class PacmanController : MonoBehaviour {
 
 		switch (gameController.gameState) {
 
+		case GameController.GameStates.PREGAME:
 		case GameController.GameStates.READY:
 
 			transform.position = homePosition;

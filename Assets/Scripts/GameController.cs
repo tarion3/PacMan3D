@@ -29,6 +29,7 @@ public class GameController : MonoBehaviour {
 	private bool readyInitComplete;
 	private bool normalInitComplete;
 	private bool powerUpInitComplete;
+	private bool gameOverInitComplete;
 
 	private float elapsedTime;
 	private bool skipReadyWait;
@@ -59,6 +60,7 @@ public class GameController : MonoBehaviour {
 		readyInitComplete = false;
 		normalInitComplete = false;
 		powerUpInitComplete = false;
+		gameOverInitComplete = false;
 
 		elapsedTime = 0;
 		skipReadyWait = false;
@@ -66,7 +68,7 @@ public class GameController : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
 
 		if (count != oldCount) {
 			SetCountText (count.ToString ());
@@ -87,16 +89,21 @@ public class GameController : MonoBehaviour {
 			if (!preGameInitComplete) {
 
 				ResetGameBoard();
+				lives = 3;
 
 				SetWinText("Ready?");
 				gameAudio.clip = preGameAudio;
+				gameAudio.loop = false;
 				gameAudio.Play();
+
 				preGameInitComplete = true;
 
 			} else if (!gameAudio.isPlaying) {
 
-				readyInitComplete = false;
 				skipReadyWait = true;
+
+				preGameInitComplete = false;
+				readyInitComplete = false;
 				gameState = GameStates.READY;
 
 			}
@@ -107,15 +114,15 @@ public class GameController : MonoBehaviour {
 
 			if (!readyInitComplete) {
 
-				SetWinText("Ready?");
-				readyInitComplete = true;
-
 				if (skipReadyWait) {
-					skipReadyWait = false;
 					elapsedTime = 2;
+					skipReadyWait = false;
 				} else {
 					elapsedTime = 0;
+					SetWinText("Ready?");
 				}
+
+				readyInitComplete = true;
 
 			}
 
@@ -124,6 +131,7 @@ public class GameController : MonoBehaviour {
 			if (elapsedTime > 2) {
 
 				elapsedTime = 0;
+				readyInitComplete = false;
 				normalInitComplete = false;
 				gameState = GameStates.NORMAL;
 
@@ -141,11 +149,6 @@ public class GameController : MonoBehaviour {
 				gameAudio.Play();
 				normalInitComplete = true;
 				
-			} else {
-
-				powerUpInitComplete = false;
-				readyInitComplete = false;
-
 			}
 
 			break;
@@ -184,14 +187,28 @@ public class GameController : MonoBehaviour {
 
 		case GameStates.GAMEOVER:
 
-			if (count >= maxCount) {
-				SetWinText ("You Win!");
-			}
-			else {
-				SetWinText("GAME OVER");
+			if (!gameOverInitComplete) {
+
+				if (count >= maxCount) {
+					SetWinText ("You Win!");
+				}
+				else {
+					SetWinText("GAME OVER");
+				}
+
+				gameAudio.Stop ();
+				elapsedTime = 0;
+				gameOverInitComplete = true;
+
 			}
 
-			gameAudio.Stop ();
+			elapsedTime += Time.deltaTime;
+
+			if (elapsedTime > 5) {
+				gameOverInitComplete = false;
+				preGameInitComplete = false;
+				gameState = GameStates.PREGAME;
+			}
 
 			break;
 

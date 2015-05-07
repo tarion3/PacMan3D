@@ -36,7 +36,7 @@ public class GhostController : MonoBehaviour {
 		warp1Translation = new Vector3 (28,0,0);
 		warp2Translation = new Vector3 (-28,0,0);
 
-		homePosition = transform.position;
+		homePosition = new Vector3(Random.Range(-2, 2),1,1);
 		ghostState = GhostState.ALIVE;
 
 	}
@@ -45,6 +45,7 @@ public class GhostController : MonoBehaviour {
 
 		switch (gameController.gameState) {
 
+		case GameController.GameStates.PREGAME:
 		case GameController.GameStates.READY:
 			
 			transform.position = homePosition;
