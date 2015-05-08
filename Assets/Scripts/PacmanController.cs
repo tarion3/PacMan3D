@@ -7,7 +7,7 @@ public class PacmanController : MonoBehaviour {
 	public AudioClip pelletEatAudio;
 	public AudioClip powerPelletEatAudio;
 	public AudioClip ghostEatAudio;
-	
+
 	private GameController gameController;
 
 	private AudioSource pacmanAudio;
@@ -18,6 +18,13 @@ public class PacmanController : MonoBehaviour {
 	private Vector3 warp2Translation;
 
 	private float speed;
+
+	private bool preGameInitComplete;
+	private bool readyInitComplete;
+	private bool normalInitComplete;
+	private bool powerUpInitComplete;
+	private bool dieInitComplete;
+	private bool gameOverInitComplete;
 
 	// Use this for initialization
 	void Start () {
@@ -33,6 +40,13 @@ public class PacmanController : MonoBehaviour {
 		warp1Translation = new Vector3 (28,0,0);
 		warp2Translation = new Vector3 (-28,0,0);
 
+		preGameInitComplete = false;
+		readyInitComplete = false;
+		normalInitComplete = false;
+		powerUpInitComplete = false;
+		dieInitComplete = false;
+		gameOverInitComplete = false;
+
 	}
 
 	void FixedUpdate() {
@@ -40,15 +54,54 @@ public class PacmanController : MonoBehaviour {
 		switch (gameController.gameState) {
 
 		case GameController.GameStates.PREGAME:
+
+			if (!preGameInitComplete) {
+
+				speed *= (gameController.level + 1)/2;
+				
+				readyInitComplete = false;
+				preGameInitComplete = true;
+				
+			}
+
+			goto case GameController.GameStates.READY;
+
 		case GameController.GameStates.READY:
 
-			transform.position = homePosition;
-			direction = Vector3.zero;
+			if (!readyInitComplete) {
+
+				transform.position = homePosition;
+				direction = Vector3.zero;
+
+				normalInitComplete = false;
+				readyInitComplete = true;
+
+			}
 
 			break;
 
 		case GameController.GameStates.NORMAL:
+
+			if (!normalInitComplete) {
+
+				dieInitComplete = false;
+				powerUpInitComplete = false;
+				gameOverInitComplete = false;
+				normalInitComplete = true;
+				
+			}
+
+			goto case GameController.GameStates.POWERUP;
+
 		case GameController.GameStates.POWERUP:
+
+			if (!powerUpInitComplete) {
+				
+				normalInitComplete = false;
+				gameOverInitComplete = false;
+				powerUpInitComplete = true;
+				
+			}
 
 			float moveHorizontal = Input.GetAxis ("Horizontal");
 			float moveVertical = Input.GetAxis ("Vertical");
@@ -70,6 +123,39 @@ public class PacmanController : MonoBehaviour {
 			
 			//}
 
+			break;
+
+		case GameController.GameStates.DIE:
+
+			if (!dieInitComplete) {
+
+				gameController.gameAudio.Stop();
+				pacmanAudio.clip = pacmanDieAudio;
+				pacmanAudio.Play();
+
+				readyInitComplete = false;
+				gameOverInitComplete = false;
+				dieInitComplete = true;
+
+			} else if (!pacmanAudio.isPlaying) {
+
+				gameController.lives--;
+
+			}
+
+			break;
+
+		case GameController.GameStates.GAMEOVER:
+			
+			if (!gameOverInitComplete) {
+
+				transform.position = homePosition;
+				
+				preGameInitComplete = false;
+				gameOverInitComplete = true;
+				
+			}
+			
 			break;
 
 		}
@@ -105,27 +191,17 @@ public class PacmanController : MonoBehaviour {
 
 			// if we are in normal mode, pacman just dies
 			if (gameController.gameState == GameController.GameStates.NORMAL) {
-
-				gameController.gameAudio.Stop();
-				pacmanAudio.clip = pacmanDieAudio;
-				pacmanAudio.Play();
-
-				gameController.lives--;
-				
-				if (gameController.lives > 0) {
-					gameController.gameState = GameController.GameStates.READY;
-				}
-				else {
-					gameController.gameState = GameController.GameStates.GAMEOVER;
-				}
-
+				gameController.gameState = GameController.GameStates.DIE;
 			}
 
 			// otherwise, pacman eats the ghost
 			else if (gameController.gameState == GameController.GameStates.POWERUP) {
 
 				pacmanAudio.clip = ghostEatAudio;
+				pacmanAudio.volume = 1.0f;
 				pacmanAudio.Play();
+				pacmanAudio.volume = 0.5f;
+
 				gameController.score += 100;
 
 			}

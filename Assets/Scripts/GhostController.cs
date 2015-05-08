@@ -18,10 +18,22 @@ public class GhostController : MonoBehaviour {
 	private Vector3 warp2Translation;
 
 	private Vector3 homePosition;
+	private Vector3 ghostDestination;
+
+	private float normalSpeed, afraidSpeed, deadSpeed;
+	private float distanceFromPacman;
+	private float distanceFromDestination;
+	private bool reachedGhostDestination;
 
 	public enum GhostState { ALIVE, DEAD };
 	private GhostState ghostState;
 
+	private bool preGameInitComplete;
+	private bool readyInitComplete;
+	private bool normalInitComplete;
+	private bool powerUpInitComplete;
+	private bool dieInitComplete;
+	private bool gameOverInitComplete;
 
 	// Use this for initialization
 	void Start () {
@@ -36,8 +48,28 @@ public class GhostController : MonoBehaviour {
 		warp1Translation = new Vector3 (28,0,0);
 		warp2Translation = new Vector3 (-28,0,0);
 
-		homePosition = new Vector3(Random.Range(-2, 2),1,1);
+		homePosition = transform.position;
+
+		if (name == "Inky") ghostDestination = new Vector3(10, 1, 13);
+		if (name == "Blinky") ghostDestination = new Vector3 (10, 1, -15);
+		if (name == "Pinky") ghostDestination = new Vector3 (-10, 1, -15);
+		if (name == "Clyde") ghostDestination = new Vector3 (0, 1, -3);
+
+		normalSpeed = 4.0f;
+		afraidSpeed = 4.0f;
+		deadSpeed = 20.0f;
+		distanceFromPacman = 0;
+		distanceFromDestination = 0;
+		reachedGhostDestination = false;
+
 		ghostState = GhostState.ALIVE;
+
+		preGameInitComplete = false;
+		readyInitComplete = false;
+		normalInitComplete = false;
+		powerUpInitComplete = false;
+		dieInitComplete = false;
+		gameOverInitComplete = false;
 
 	}
 
@@ -46,32 +78,94 @@ public class GhostController : MonoBehaviour {
 		switch (gameController.gameState) {
 
 		case GameController.GameStates.PREGAME:
+
+			if (!preGameInitComplete) {
+
+				normalSpeed *= (gameController.level + 1)/2;
+				afraidSpeed *= (gameController.level + 1)/2;
+
+				readyInitComplete = false;
+				preGameInitComplete = true;
+
+			}
+
+			goto case GameController.GameStates.READY;
+
 		case GameController.GameStates.READY:
+
+			if (!readyInitComplete) {
 			
-			transform.position = homePosition;
-			ghostState = GhostState.ALIVE;
+				ghostAgent.enabled = false;
+				transform.position = homePosition;
+				ghostState = GhostState.ALIVE;
+				ghostAgent.enabled = true;
+
+				if (ghostRenderer.material != origGhostMaterial) {
+					ghostRenderer.material = origGhostMaterial;
+				}
+
+				normalInitComplete = false;
+				readyInitComplete = true;
+
+			}
 			
 			break;
 			
 		case GameController.GameStates.NORMAL:
+
+			if (!normalInitComplete) {
+
+				reachedGhostDestination = false;
+
+				dieInitComplete = false;
+				powerUpInitComplete = false;
+				gameOverInitComplete = false;
+				normalInitComplete = true;
+
+			}
 
 			if (ghostState == GhostState.ALIVE) {
 
 				if (ghostRenderer.material != origGhostMaterial) {
 					ghostRenderer.material = origGhostMaterial;
 				}
-				ghostAgent.speed = 8.0f;
-				ghostAgent.SetDestination (pacmanTransform.position);
+
+				ghostAgent.speed = normalSpeed;
+
+				distanceFromDestination = (transform.position - ghostDestination).magnitude;
+				distanceFromPacman = (transform.position - pacmanTransform.position).magnitude;
+
+				if (distanceFromPacman < 5.0f || reachedGhostDestination) {
+					if (ghostAgent.destination != pacmanTransform.position) {
+						ghostAgent.SetDestination(pacmanTransform.position);
+					}
+				} else {
+					if (ghostAgent.destination != ghostDestination) {
+						ghostAgent.SetDestination (ghostDestination);
+					}
+					if (distanceFromDestination < 2.0f) {
+						reachedGhostDestination = true;
+					}
+				}
 
 			}
 			else if (ghostState == GhostState.DEAD) {
 
-				ghostAgent.speed = 30.0f;
+				if (ghostRenderer.material != ghostDeadMaterial) {
+					ghostRenderer.material = ghostDeadMaterial;
+				}
+				ghostAgent.speed = deadSpeed;
 				ghostAgent.SetDestination (homePosition);
 				
-				if (ghostAgent.remainingDistance < 0.2f) {
+				if (ghostAgent.remainingDistance < 1.0f) {
+
 					ghostCollider.enabled = true;
 					ghostState = GhostState.ALIVE;
+
+					if (ghostRenderer.material != origGhostMaterial) {
+						ghostRenderer.material = origGhostMaterial;
+					}
+
 				}
 
 			}
@@ -80,13 +174,21 @@ public class GhostController : MonoBehaviour {
 
 		case GameController.GameStates.POWERUP:
 
+			if (!powerUpInitComplete) {
+				
+				normalInitComplete = false;
+				gameOverInitComplete = false;
+				powerUpInitComplete = true;
+				
+			}
+
 			if (ghostState == GhostState.ALIVE) {
 
 				if (ghostRenderer.material != ghostAfraidMaterial) {
 					ghostRenderer.material = ghostAfraidMaterial;
 				}
-				ghostAgent.speed = 3.0f;
-				ghostAgent.SetDestination (homePosition);
+				ghostAgent.speed = afraidSpeed;
+				ghostAgent.SetDestination (-pacmanTransform.position);
 
 			}
 			else if (ghostState == GhostState.DEAD) {
@@ -94,16 +196,34 @@ public class GhostController : MonoBehaviour {
 				if (ghostRenderer.material != ghostDeadMaterial) {
 					ghostRenderer.material = ghostDeadMaterial;
 				}
-				ghostAgent.speed = 30.0f;
+				ghostAgent.speed = deadSpeed;
 				ghostAgent.SetDestination (homePosition);
-				
-				if (ghostAgent.remainingDistance < 0.2f) {
-					ghostCollider.enabled = true;
-					ghostState = GhostState.ALIVE;
-				}
 				
 			}
 
+			break;
+
+		case GameController.GameStates.DIE:
+			
+			if (!dieInitComplete) {
+				
+				readyInitComplete = false;
+				gameOverInitComplete = false;
+				dieInitComplete = true;
+				
+			}
+			
+			break;
+
+		case GameController.GameStates.GAMEOVER:
+			
+			if (!gameOverInitComplete) {
+				
+				preGameInitComplete = false;
+				gameOverInitComplete = true;
+				
+			}
+			
 			break;
 
 		}
