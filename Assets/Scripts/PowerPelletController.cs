@@ -64,6 +64,9 @@ public class PowerPelletController : MonoBehaviour {
 			powerPelletRenderer.enabled = false;
 			powerPelletCollider.enabled = false;
 
+			gameController.pelletCount++;
+			gameController.score += 50;
+
 			// trigger game state change
 			gameController.gameState = GameController.GameStates.POWERUP;
 			gameController.powerUpDuration = 0;

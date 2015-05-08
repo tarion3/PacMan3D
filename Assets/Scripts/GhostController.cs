@@ -5,6 +5,7 @@ public class GhostController : MonoBehaviour {
 
 	public Transform pacmanTransform;
 	public Material ghostAfraidMaterial;
+	public Material ghostRisingMaterial;
 	public Material ghostDeadMaterial;
 
 	private GameController gameController;
@@ -50,14 +51,14 @@ public class GhostController : MonoBehaviour {
 
 		homePosition = transform.position;
 
-		if (name == "Inky") ghostDestination = new Vector3(10, 1, 13);
-		if (name == "Blinky") ghostDestination = new Vector3 (10, 1, -15);
-		if (name == "Pinky") ghostDestination = new Vector3 (-10, 1, -15);
-		if (name == "Clyde") ghostDestination = new Vector3 (0, 1, -3);
+		if (name == "Inky") ghostDestination = new Vector3(10, 1, -15);
+		if (name == "Blinky") ghostDestination = new Vector3 (10, 1, 13);
+		if (name == "Pinky") ghostDestination = new Vector3 (-10, 1, 13);
+		if (name == "Clyde") ghostDestination = new Vector3 (-10, 1, -15);
 
 		normalSpeed = 4.0f;
-		afraidSpeed = 4.0f;
-		deadSpeed = 20.0f;
+		afraidSpeed = 1.0f;
+		deadSpeed = 10.0f;
 		distanceFromPacman = 0;
 		distanceFromDestination = 0;
 		reachedGhostDestination = false;
@@ -130,7 +131,11 @@ public class GhostController : MonoBehaviour {
 					ghostRenderer.material = origGhostMaterial;
 				}
 
-				ghostAgent.speed = normalSpeed;
+				if (name == "Blinky" && gameController.pelletCount > gameController.pelletCountMax * 3.0f/4.0f) {
+					ghostAgent.speed = normalSpeed * 2;
+				} else {
+					ghostAgent.speed = normalSpeed;
+				}
 
 				distanceFromDestination = (transform.position - ghostDestination).magnitude;
 				distanceFromPacman = (transform.position - pacmanTransform.position).magnitude;
@@ -175,7 +180,7 @@ public class GhostController : MonoBehaviour {
 		case GameController.GameStates.POWERUP:
 
 			if (!powerUpInitComplete) {
-				
+
 				normalInitComplete = false;
 				gameOverInitComplete = false;
 				powerUpInitComplete = true;
@@ -184,9 +189,22 @@ public class GhostController : MonoBehaviour {
 
 			if (ghostState == GhostState.ALIVE) {
 
-				if (ghostRenderer.material != ghostAfraidMaterial) {
-					ghostRenderer.material = ghostAfraidMaterial;
+				float durationFraction = gameController.powerUpDuration - (int)gameController.powerUpDuration;
+
+				if (gameController.powerUpDuration > gameController.powerUpMaxLength/2.0f && durationFraction > 0.50) {
+
+					if (ghostRenderer.material != ghostRisingMaterial) {
+						ghostRenderer.material = ghostRisingMaterial;
+					}
+
+				} else {
+
+					if (ghostRenderer.material != ghostAfraidMaterial) {
+						ghostRenderer.material = ghostAfraidMaterial;
+					}
+
 				}
+
 				ghostAgent.speed = afraidSpeed;
 				ghostAgent.SetDestination (-pacmanTransform.position);
 
@@ -246,6 +264,10 @@ public class GhostController : MonoBehaviour {
 
 				ghostState = GhostState.DEAD;
 				ghostCollider.enabled = false;
+
+				gameController.numGhostsEaten++;
+
+				gameController.score += (int)((Mathf.Pow(2.0f, gameController.numGhostsEaten)) * 100.0f);
 
 			}
 

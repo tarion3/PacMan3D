@@ -9,6 +9,7 @@ public class PacmanController : MonoBehaviour {
 	public AudioClip ghostEatAudio;
 
 	private GameController gameController;
+	private MeshRenderer pacmanRenderer;
 
 	private AudioSource pacmanAudio;
 
@@ -30,6 +31,7 @@ public class PacmanController : MonoBehaviour {
 	void Start () {
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
+		pacmanRenderer = GetComponent<MeshRenderer> ();
 
 		pacmanAudio = GetComponent<AudioSource> ();
 
@@ -71,6 +73,7 @@ public class PacmanController : MonoBehaviour {
 			if (!readyInitComplete) {
 
 				transform.position = homePosition;
+				pacmanRenderer.enabled = true;
 				direction = Vector3.zero;
 
 				normalInitComplete = false;
@@ -150,6 +153,7 @@ public class PacmanController : MonoBehaviour {
 			if (!gameOverInitComplete) {
 
 				transform.position = homePosition;
+				pacmanRenderer.enabled = false;
 				
 				preGameInitComplete = false;
 				gameOverInitComplete = true;
@@ -168,16 +172,12 @@ public class PacmanController : MonoBehaviour {
 
 			pacmanAudio.clip = pelletEatAudio;
 			pacmanAudio.Play ();
-			gameController.count++;
-			gameController.score += 5;
 
 
 		} else if (other.gameObject.CompareTag ("PowerPellet")) {
 
 			pacmanAudio.clip = powerPelletEatAudio;
 			pacmanAudio.Play ();
-			gameController.count++;
-			gameController.score += 10;
 
 		} else if (other.gameObject.CompareTag ("WarpTunnel1")) {
 
@@ -201,8 +201,6 @@ public class PacmanController : MonoBehaviour {
 				pacmanAudio.volume = 1.0f;
 				pacmanAudio.Play();
 				pacmanAudio.volume = 0.5f;
-
-				gameController.score += 100;
 
 			}
 

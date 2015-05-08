@@ -62,6 +62,9 @@ public class PelletController : MonoBehaviour {
 			pelletRenderer.enabled = false;
 			pelletCollider.enabled = false;
 
+			gameController.pelletCount++;
+			gameController.score += 10;
+
 		}
 
 	}
