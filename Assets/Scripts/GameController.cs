@@ -7,32 +7,38 @@ public class GameController : MonoBehaviour {
 	public AudioClip preGameAudio;
 	public AudioClip normalAudio;
 	public AudioClip powerUpAudio;
+	public AudioSource gameAudio;
 
-	public enum GameStates {PREGAME, READY, NORMAL, POWERUP, GAMEOVER};
+	public enum GameStates {PREGAME, READY, NORMAL, POWERUP, DIE, GAMEOVER};
 	public GameStates gameState;
 
-	public Text countText;
+	public Text pelletCountText;
 	public Text scoreText;
 	public Text livesText;
 	public Text winText;
 
-	public int count;
+	public int pelletCount;
+	public int pelletCountMax;
 	public int score;
 	public int lives;
-	private int oldCount, oldScore, oldLives, maxCount;
+	public int level;
 
-	public AudioSource gameAudio;
-	private float audioMaxLength;
-	private float audioDuration;
+	private int oldPelletCount, oldScore, oldLives;
+
+	public float powerUpMaxLength;
+	public float powerUpDuration;
 
 	private bool preGameInitComplete;
 	private bool readyInitComplete;
 	private bool normalInitComplete;
 	private bool powerUpInitComplete;
+	private bool dieInitComplete;
 	private bool gameOverInitComplete;
 
 	private float elapsedTime;
 	private bool skipReadyWait;
+
+	public int numGhostsEaten;
 
 	// Use this for initialization
 	void Start () {
@@ -40,46 +46,63 @@ public class GameController : MonoBehaviour {
 		gameAudio = GetComponent<AudioSource> ();
 		gameState = GameStates.PREGAME;
 
-		oldCount = 0;
+		oldPelletCount = 0;
 		oldScore = 0;
 		oldLives = 3;
-		count = 0;
+		pelletCount = 0;
 		score = 0;
 		lives = 3;
-		maxCount = 156;
+		level = 1;
+		pelletCountMax = 156;
 
-		SetCountText("0");
+		SetPelletCountText("0");
 		SetScoreText("0");
 		SetLivesText("3");
 		SetWinText("");
 
-		audioMaxLength = 8;
-		audioDuration = 0;
+		powerUpMaxLength = 8;
+		powerUpDuration = 0;
 
 		preGameInitComplete = false;
 		readyInitComplete = false;
 		normalInitComplete = false;
 		powerUpInitComplete = false;
+		dieInitComplete = false;
 		gameOverInitComplete = false;
 
 		elapsedTime = 0;
 		skipReadyWait = false;
+
+		numGhostsEaten = 0;
 	
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
 
-		if (count != oldCount) {
-			SetCountText (count.ToString ());
+		if (pelletCount != oldPelletCount) {
+			oldPelletCount = pelletCount;
+			SetPelletCountText (pelletCount.ToString ());
 		}
 
 		if (score != oldScore) {
+			oldScore = score;
 			SetScoreText (score.ToString ());
 		}
 
 		if (lives != oldLives) {
+
+			oldLives = lives;
 			SetLivesText (lives.ToString ());
+
+			if (lives == 0) {
+				gameOverInitComplete = false;
+				gameState = GameStates.GAMEOVER;
+			} else if (lives < 3) {
+				readyInitComplete = false;
+				gameState = GameStates.READY;
+			}
+
 		}
 		
 		switch (gameState) {
@@ -88,22 +111,27 @@ public class GameController : MonoBehaviour {
 
 			if (!preGameInitComplete) {
 
-				ResetGameBoard();
-				lives = 3;
+				pelletCount = 0;
 
-				SetWinText("Ready?");
+				if (level == 1) {
+					lives = 3;
+					score = 0;
+				}
+
+				SetWinText("Level " + level.ToString() + "\nGet Ready!");
+				SetScoreText (score.ToString ());
+
 				gameAudio.clip = preGameAudio;
 				gameAudio.loop = false;
 				gameAudio.Play();
+
+				readyInitComplete = false;
+				skipReadyWait = true;
 
 				preGameInitComplete = true;
 
 			} else if (!gameAudio.isPlaying) {
 
-				skipReadyWait = true;
-
-				preGameInitComplete = false;
-				readyInitComplete = false;
 				gameState = GameStates.READY;
 
 			}
@@ -119,9 +147,10 @@ public class GameController : MonoBehaviour {
 					skipReadyWait = false;
 				} else {
 					elapsedTime = 0;
-					SetWinText("Ready?");
+					SetWinText(lives.ToString() + " Lives Left\nGet Ready!");
 				}
 
+				normalInitComplete = false;
 				readyInitComplete = true;
 
 			}
@@ -131,8 +160,6 @@ public class GameController : MonoBehaviour {
 			if (elapsedTime > 2) {
 
 				elapsedTime = 0;
-				readyInitComplete = false;
-				normalInitComplete = false;
 				gameState = GameStates.NORMAL;
 
 			}
@@ -147,6 +174,10 @@ public class GameController : MonoBehaviour {
 				gameAudio.clip = normalAudio;
 				gameAudio.loop = true;
 				gameAudio.Play();
+
+				powerUpInitComplete = false;
+				dieInitComplete = false;
+				gameOverInitComplete = false;
 				normalInitComplete = true;
 				
 			}
@@ -160,23 +191,25 @@ public class GameController : MonoBehaviour {
 				gameAudio.clip = powerUpAudio;
 				gameAudio.loop = true;
 				gameAudio.Play();
+
+				powerUpDuration = 0;
+				numGhostsEaten = 0;
+
+				normalInitComplete = false;
+				gameOverInitComplete = false;
 				powerUpInitComplete = true;
 
 			} else {
 
-				audioDuration += Time.deltaTime;
+				powerUpDuration += Time.deltaTime;
 				
 				// stop audio and trigger game state change
-				if (audioDuration >= audioMaxLength) {
+				if (powerUpDuration >= powerUpMaxLength) {
 					
 					// stop audio
-					audioDuration = 0;
 					gameAudio.Stop ();
 					
 					// trigger game state change
-					powerUpInitComplete = false;
-					normalInitComplete = false;
-					readyInitComplete = false;
 					gameState = GameStates.NORMAL;
 					
 				}
@@ -185,29 +218,46 @@ public class GameController : MonoBehaviour {
 
 			break;
 
+		case GameStates.DIE:
+
+			if (!dieInitComplete) {
+
+				readyInitComplete = false;
+				gameOverInitComplete = false;
+
+				dieInitComplete = true;
+
+			}
+
+			break;
+
 		case GameStates.GAMEOVER:
 
 			if (!gameOverInitComplete) {
 
-				if (count >= maxCount) {
-					SetWinText ("You Win!");
+				if (pelletCount >= pelletCountMax) {
+					SetWinText ("Level " + level.ToString() + "\nCleared!");
+					level++;
 				}
 				else {
-					SetWinText("GAME OVER");
+					SetWinText("GAME OVER\nScore: " + score.ToString());
+					level = 1;
 				}
 
 				gameAudio.Stop ();
 				elapsedTime = 0;
+
+				preGameInitComplete = false;
 				gameOverInitComplete = true;
 
-			}
+			} else {
 
-			elapsedTime += Time.deltaTime;
+				elapsedTime += Time.deltaTime;
 
-			if (elapsedTime > 5) {
-				gameOverInitComplete = false;
-				preGameInitComplete = false;
-				gameState = GameStates.PREGAME;
+				if (elapsedTime > 5) {
+					gameState = GameStates.PREGAME;
+				}
+
 			}
 
 			break;
@@ -216,15 +266,15 @@ public class GameController : MonoBehaviour {
 
 	}
 
-	void SetCountText(string text) {
-		countText.text = "Count: " + text + " / " + maxCount.ToString();
-		if (count >= maxCount) {
+	void SetPelletCountText(string text) {
+		pelletCountText.text = "Pellets: " + text + " / " + pelletCountMax.ToString();
+		if (pelletCount >= pelletCountMax) {
 			gameState = GameStates.GAMEOVER;
 		}
 	}
 	
 	void SetScoreText(string text) {
-		scoreText.text = "Score: " + text;
+		scoreText.text = "Level " + level + ", Score: " + text;
 	}
 
 	void SetLivesText(string text) {
@@ -233,22 +283,6 @@ public class GameController : MonoBehaviour {
 	
 	void SetWinText(string text) {
 		winText.text = text;
-	}
-
-	void ResetGameBoard() {
-
-		// redisplay all pellets
-		GameObject[] pellets = GameObject.FindGameObjectsWithTag ("Pellet");
-		foreach (GameObject pellet in pellets) {
-			pellet.SetActive(true);
-		}
-
-		// redisplay all power pellets
-		GameObject[] powerPellets = GameObject.FindGameObjectsWithTag ("PowerPellet");
-		foreach (GameObject powerPellet in powerPellets) {
-			powerPellet.SetActive(true);
-		}
-
 	}
 
 }
