@@ -14,7 +14,9 @@ public class PacmanController : MonoBehaviour {
 	private AudioSource pacmanAudio;
 
 	private Vector3 homePosition;
-	private Vector3 direction;
+	private Vector3 curDirection;
+	private Vector3 newDirection;
+	private RaycastHit hit;
 	private Vector3 warp1Translation;
 	private Vector3 warp2Translation;
 
@@ -38,7 +40,8 @@ public class PacmanController : MonoBehaviour {
 		pacmanAudio = GetComponent<AudioSource> ();
 
 		homePosition = transform.position;
-		direction = new Vector3(0,0,0);
+		curDirection = new Vector3(0,0,0);
+		newDirection = new Vector3(0,0,0);
 		warp1Translation = new Vector3 (28,0,0);
 		warp2Translation = new Vector3 (-28,0,0);
 
@@ -82,7 +85,7 @@ public class PacmanController : MonoBehaviour {
 
 				transform.position = homePosition;
 				pacmanRenderer.enabled = true;
-				direction = Vector3.zero;
+				curDirection = Vector3.zero;
 
 				normalInitComplete = false;
 				readyInitComplete = true;
@@ -120,23 +123,27 @@ public class PacmanController : MonoBehaviour {
 			
 			float moveHorizontal = Input.GetAxis ("Horizontal");
 			float moveVertical = Input.GetAxis ("Vertical");
+
+			if (moveHorizontal != 0 || moveVertical != 0) {
 			
-			if (moveHorizontal > 0)
-				direction.Set (speed, 0, 0);
-			else if (moveHorizontal < 0)
-				direction.Set (-speed, 0, 0);
-			else if (moveVertical > 0)
-				direction.Set (0, 0, speed);
-			else if (moveVertical < 0)
-				direction.Set (0, 0, -speed);
-			
-			// only move if there are no obstacles in the new direction
-			//if (!Physics.Raycast(transform.position, direction, 0.3f)) {
-			
-			transform.LookAt (transform.position + direction);
-			transform.Translate (direction, Space.World);
-			
-			//}
+				if (moveHorizontal > 0)
+					newDirection.Set (speed, 0, 0);
+				else if (moveHorizontal < 0)
+					newDirection.Set (-speed, 0, 0);
+				else if (moveVertical > 0)
+					newDirection.Set (0, 0, speed);
+				else if (moveVertical < 0)
+					newDirection.Set (0, 0, -speed);
+				
+				// only move in a new direction if there are no obstacles
+				if (!Physics.Raycast(transform.position, newDirection, out hit, 1.0f) || hit.collider.tag != "Wall") {
+					curDirection = newDirection;
+					transform.LookAt (transform.position + curDirection);
+				}
+
+			}
+
+			transform.Translate (curDirection, Space.World);
 
 			break;
 
