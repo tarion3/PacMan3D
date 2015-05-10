@@ -8,6 +8,7 @@ public class PowerPelletController : MonoBehaviour {
 	private SphereCollider powerPelletCollider;
 
 	private bool preGameInitComplete;
+	private bool winInitComplete;
 	private bool gameOverInitComplete;
 
 	// Use this for initialization
@@ -18,6 +19,7 @@ public class PowerPelletController : MonoBehaviour {
 		powerPelletCollider = GetComponent<SphereCollider> ();
 
 		preGameInitComplete = false;
+		winInitComplete = false;
 		gameOverInitComplete = false;
 
 	}
@@ -40,7 +42,17 @@ public class PowerPelletController : MonoBehaviour {
 			
 			break;
 
-
+		case GameController.GameStates.WIN:
+			
+			if (!winInitComplete) {
+				
+				preGameInitComplete = false;
+				winInitComplete = true;
+				
+			}
+			
+			break;
+			
 		case GameController.GameStates.GAMEOVER:
 			
 			if (!gameOverInitComplete) {
@@ -60,16 +72,10 @@ public class PowerPelletController : MonoBehaviour {
 
 		if (other.gameObject.CompareTag ("PacMan")) {
 
-			// remove pellet
 			powerPelletRenderer.enabled = false;
 			powerPelletCollider.enabled = false;
 
-			gameController.pelletCount++;
-			gameController.score += 50;
-
-			// trigger game state change
 			gameController.gameState = GameController.GameStates.POWERUP;
-			gameController.powerUpDuration = 0;
 		
 		}
 		

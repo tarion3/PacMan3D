@@ -8,6 +8,7 @@ public class PelletController : MonoBehaviour {
 	private SphereCollider pelletCollider;
 
 	private bool preGameInitComplete;
+	private bool winInitComplete;
 	private bool gameOverInitComplete;
 
 	// Use this for initialization
@@ -18,6 +19,7 @@ public class PelletController : MonoBehaviour {
 		pelletCollider = GetComponent<SphereCollider> ();
 
 		preGameInitComplete = false;
+		winInitComplete = false;
 		gameOverInitComplete = false;
 
 	}
@@ -38,6 +40,17 @@ public class PelletController : MonoBehaviour {
 
 			}
 
+			break;
+
+		case GameController.GameStates.WIN:
+			
+			if (!winInitComplete) {
+				
+				preGameInitComplete = false;
+				winInitComplete = true;
+				
+			}
+			
 			break;
 
 		case GameController.GameStates.GAMEOVER:
@@ -61,9 +74,6 @@ public class PelletController : MonoBehaviour {
 
 			pelletRenderer.enabled = false;
 			pelletCollider.enabled = false;
-
-			gameController.pelletCount++;
-			gameController.score += 10;
 
 		}
 

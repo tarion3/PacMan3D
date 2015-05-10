@@ -33,7 +33,9 @@ public class GhostController : MonoBehaviour {
 	private bool readyInitComplete;
 	private bool normalInitComplete;
 	private bool powerUpInitComplete;
+	private bool eatGhostInitComplete;
 	private bool dieInitComplete;
+	private bool winInitComplete;
 	private bool gameOverInitComplete;
 
 	// Use this for initialization
@@ -69,7 +71,9 @@ public class GhostController : MonoBehaviour {
 		readyInitComplete = false;
 		normalInitComplete = false;
 		powerUpInitComplete = false;
+		eatGhostInitComplete = false;
 		dieInitComplete = false;
+		winInitComplete = false;
 		gameOverInitComplete = false;
 
 	}
@@ -82,8 +86,13 @@ public class GhostController : MonoBehaviour {
 
 			if (!preGameInitComplete) {
 
-				normalSpeed *= (gameController.level + 1)/2;
-				afraidSpeed *= (gameController.level + 1)/2;
+				if (gameController.level > 1) {
+
+					normalSpeed += (normalSpeed / 4.0f);
+					afraidSpeed += (afraidSpeed / 4.0f);
+					deadSpeed += (deadSpeed / 4.0f);
+
+				}
 
 				readyInitComplete = false;
 				preGameInitComplete = true;
@@ -120,6 +129,7 @@ public class GhostController : MonoBehaviour {
 
 				dieInitComplete = false;
 				powerUpInitComplete = false;
+				winInitComplete = false;
 				gameOverInitComplete = false;
 				normalInitComplete = true;
 
@@ -182,16 +192,19 @@ public class GhostController : MonoBehaviour {
 			if (!powerUpInitComplete) {
 
 				normalInitComplete = false;
+				winInitComplete = false;
 				gameOverInitComplete = false;
 				powerUpInitComplete = true;
 				
 			}
 
+			eatGhostInitComplete = false;
+
 			if (ghostState == GhostState.ALIVE) {
 
 				float durationFraction = gameController.powerUpDuration - (int)gameController.powerUpDuration;
 
-				if (gameController.powerUpDuration > gameController.powerUpMaxLength/2.0f && durationFraction > 0.50) {
+				if (gameController.powerUpDuration > gameController.powerUpMaxDuration / 2.0f && durationFraction > 0.50) {
 
 					if (ghostRenderer.material != ghostRisingMaterial) {
 						ghostRenderer.material = ghostRisingMaterial;
@@ -216,9 +229,30 @@ public class GhostController : MonoBehaviour {
 				}
 				ghostAgent.speed = deadSpeed;
 				ghostAgent.SetDestination (homePosition);
-				
+
+				if (ghostAgent.remainingDistance < 1.0f) {
+					
+					ghostCollider.enabled = true;
+					ghostState = GhostState.ALIVE;
+					
+					if (ghostRenderer.material != origGhostMaterial) {
+						ghostRenderer.material = origGhostMaterial;
+					}
+					
+				}
+
 			}
 
+			break;
+
+		case GameController.GameStates.EATGHOST:
+			
+			if (!eatGhostInitComplete) {
+				
+				eatGhostInitComplete = true;
+				
+			}
+			
 			break;
 
 		case GameController.GameStates.DIE:
@@ -228,6 +262,17 @@ public class GhostController : MonoBehaviour {
 				readyInitComplete = false;
 				gameOverInitComplete = false;
 				dieInitComplete = true;
+				
+			}
+			
+			break;
+
+		case GameController.GameStates.WIN:
+			
+			if (!winInitComplete) {
+				
+				preGameInitComplete = false;
+				winInitComplete = true;
 				
 			}
 			
@@ -264,10 +309,6 @@ public class GhostController : MonoBehaviour {
 
 				ghostState = GhostState.DEAD;
 				ghostCollider.enabled = false;
-
-				gameController.numGhostsEaten++;
-
-				gameController.score += (int)((Mathf.Pow(2.0f, gameController.numGhostsEaten)) * 100.0f);
 
 			}
 
