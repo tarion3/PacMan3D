@@ -241,7 +241,7 @@ public class GameController : MonoBehaviour {
 			eatGhostInitComplete = false;
 			powerUpDuration += Time.deltaTime;
 
-			if (powerUpDuration >= powerUpMaxDuration / 2.0f && gameAudio.clip != powerUpEndingAudio) {
+			if (powerUpDuration >= powerUpMaxDuration * 3.0f / 4.0f && gameAudio.clip != powerUpEndingAudio) {
 
 				gameAudio.clip = powerUpEndingAudio;
 				gameAudio.loop = true;
