@@ -3,6 +3,15 @@ using System.Collections;
 
 public class GhostController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool readyInitComplete;
+	public bool normalInitComplete;
+	public bool powerUpInitComplete;
+	public bool eatGhostInitComplete;
+	public bool dieInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
 	public Transform pacmanTransform;
 	public Material ghostAfraidMaterial;
 	public Material ghostRisingMaterial;
@@ -30,17 +39,17 @@ public class GhostController : MonoBehaviour {
 	public enum GhostState { ALIVE, DEAD };
 	private GhostState ghostState;
 
-	private bool preGameInitComplete;
-	private bool readyInitComplete;
-	private bool normalInitComplete;
-	private bool powerUpInitComplete;
-	private bool eatGhostInitComplete;
-	private bool dieInitComplete;
-	private bool winInitComplete;
-	private bool gameOverInitComplete;
-
 	// Use this for initialization
 	void Start () {
+
+		preGameInitComplete = false;
+		readyInitComplete = false;
+		normalInitComplete = false;
+		powerUpInitComplete = false;
+		eatGhostInitComplete = false;
+		dieInitComplete = false;
+		winInitComplete = false;
+		gameOverInitComplete = false;
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 		
@@ -68,15 +77,6 @@ public class GhostController : MonoBehaviour {
 		chaseTimer = 0;
 
 		ghostState = GhostState.ALIVE;
-
-		preGameInitComplete = false;
-		readyInitComplete = false;
-		normalInitComplete = false;
-		powerUpInitComplete = false;
-		eatGhostInitComplete = false;
-		dieInitComplete = false;
-		winInitComplete = false;
-		gameOverInitComplete = false;
 
 	}
 

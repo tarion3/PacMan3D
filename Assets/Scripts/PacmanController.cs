@@ -3,6 +3,15 @@ using System.Collections;
 
 public class PacmanController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool readyInitComplete;
+	public bool normalInitComplete;
+	public bool powerUpInitComplete;
+	public bool eatGhostInitComplete;
+	public bool dieInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
 	public AudioClip eatPelletAudio;
 	public AudioClip eatPowerPelletAudio;
 	public AudioClip eatGhostAudio;
@@ -22,17 +31,17 @@ public class PacmanController : MonoBehaviour {
 
 	private float speed;
 
-	private bool preGameInitComplete;
-	private bool readyInitComplete;
-	private bool normalInitComplete;
-	private bool powerUpInitComplete;
-	private bool eatGhostInitComplete;
-	private bool dieInitComplete;
-	private bool winInitComplete;
-	private bool gameOverInitComplete;
-
 	// Use this for initialization
 	void Start () {
+
+		preGameInitComplete = false;
+		readyInitComplete = false;
+		normalInitComplete = false;
+		powerUpInitComplete = false;
+		eatGhostInitComplete = false;
+		dieInitComplete = false;
+		winInitComplete = false;
+		gameOverInitComplete = false;
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 		pacmanRenderer = GetComponent<MeshRenderer> ();
@@ -46,15 +55,6 @@ public class PacmanController : MonoBehaviour {
 		warp2Translation = new Vector3 (-28,0,0);
 
 		speed = 0.14f;
-
-		preGameInitComplete = false;
-		readyInitComplete = false;
-		normalInitComplete = false;
-		powerUpInitComplete = false;
-		eatGhostInitComplete = false;
-		dieInitComplete = false;
-		winInitComplete = false;
-		gameOverInitComplete = false;
 
 	}
 

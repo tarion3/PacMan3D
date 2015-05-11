@@ -2,24 +2,31 @@
 using System.Collections;
 
 public class WallController : MonoBehaviour {
-	
+
+	public bool normalInitComplete;
+	public bool powerUpInitComplete;
+
 	private GameController gameController;
 
-	private bool normalInitComplete;
-	private bool powerUpInitComplete;
-
 	private Vector3 origScale;
-	private float scaleTimer;
+	private Vector3 newScale;
+
+	private bool isSelectedWall;
+	private float scaleFactor;
 
 	// Use this for initialization
 	void Start () {
-		
-		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 
 		normalInitComplete = false;
 		powerUpInitComplete = false;
 
+		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
+
 		origScale = transform.localScale;
+		newScale = origScale;
+
+		isSelectedWall = false;
+		scaleFactor = 0;
 
 	}
 	
@@ -44,27 +51,45 @@ public class WallController : MonoBehaviour {
 			
 			if (!powerUpInitComplete) {
 
-				scaleTimer = 0;
+				isSelectedWall = Random.Range(0, 5) == 3;
+				scaleFactor = 9.0f / gameController.powerUpMaxDuration;
 
 				normalInitComplete = false;
 				powerUpInitComplete = true;
 				
 			}
 
-			scaleTimer += Time.deltaTime;
+			if (isSelectedWall && gameController.secondHasPassed) {
 
-			if (scaleTimer < 2.0f) {
+				if (gameController.powerUpDuration < gameController.powerUpMaxDuration / 2.0f) {
 
-				if (origScale.x > origScale.z) {
-					transform.localScale.Set(transform.localScale.x * 2, transform.localScale.y, transform.localScale.z);
+					if (origScale.x > origScale.z) {
+						if (newScale.x < scaleFactor * gameController.powerUpMaxDuration) {
+							newScale.x += scaleFactor;
+							transform.localScale = newScale;
+						}
+					} else {
+						if (newScale.z < scaleFactor * gameController.powerUpMaxDuration) {
+							newScale.z += scaleFactor;
+							transform.localScale = newScale;
+						}
+					}
+
 				} else {
-					transform.localScale.Set(transform.localScale.x, transform.localScale.y, transform.localScale.z * 2);
+
+					if (origScale.x > origScale.z) {
+						if (newScale.x > origScale.x) {
+							newScale.x -= scaleFactor;
+							transform.localScale = newScale;
+						}
+					} else {
+						if (newScale.z > origScale.z) {
+							newScale.z -= scaleFactor;
+							transform.localScale = newScale;
+						}
+					}
+
 				}
-
-			} else if (scaleTimer > 4.0f) {
-
-				transform.localScale = origScale;
-				scaleTimer = 0;
 
 			}
 			

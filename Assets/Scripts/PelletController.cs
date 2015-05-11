@@ -3,24 +3,24 @@ using System.Collections;
 
 public class PelletController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
 	private GameController gameController;
 	private MeshRenderer pelletRenderer;
 	private SphereCollider pelletCollider;
 
-	private bool preGameInitComplete;
-	private bool winInitComplete;
-	private bool gameOverInitComplete;
-
 	// Use this for initialization
 	void Start () {
-	
-		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
-		pelletRenderer = GetComponent<MeshRenderer> ();
-		pelletCollider = GetComponent<SphereCollider> ();
 
 		preGameInitComplete = false;
 		winInitComplete = false;
 		gameOverInitComplete = false;
+
+		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
+		pelletRenderer = GetComponent<MeshRenderer> ();
+		pelletCollider = GetComponent<SphereCollider> ();
 
 	}
 
@@ -36,6 +36,7 @@ public class PelletController : MonoBehaviour {
 				pelletCollider.enabled = true;
 
 				gameOverInitComplete = false;
+				winInitComplete = false;
 				preGameInitComplete = true;
 
 			}

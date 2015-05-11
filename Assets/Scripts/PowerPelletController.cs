@@ -3,24 +3,24 @@ using System.Collections;
 
 public class PowerPelletController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
 	private GameController gameController;
 	private MeshRenderer powerPelletRenderer;
 	private SphereCollider powerPelletCollider;
-
-	private bool preGameInitComplete;
-	private bool winInitComplete;
-	private bool gameOverInitComplete;
-
+	
 	// Use this for initialization
 	void Start () {
-		
-		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
-		powerPelletRenderer = GetComponent<MeshRenderer> ();
-		powerPelletCollider = GetComponent<SphereCollider> ();
 
 		preGameInitComplete = false;
 		winInitComplete = false;
 		gameOverInitComplete = false;
+
+		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
+		powerPelletRenderer = GetComponent<MeshRenderer> ();
+		powerPelletCollider = GetComponent<SphereCollider> ();
 
 	}
 	
@@ -36,6 +36,7 @@ public class PowerPelletController : MonoBehaviour {
 				powerPelletCollider.enabled = true;
 
 				gameOverInitComplete = false;
+				winInitComplete = false;
 				preGameInitComplete = true;
 
 			}
@@ -76,6 +77,7 @@ public class PowerPelletController : MonoBehaviour {
 			powerPelletCollider.enabled = false;
 
 			gameController.gameState = GameController.GameStates.POWERUP;
+			gameController.powerUpInitComplete = false;
 		
 		}
 		

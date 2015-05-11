@@ -4,6 +4,15 @@ using System.Collections;
 
 public class GameController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool readyInitComplete;
+	public bool normalInitComplete;
+	public bool powerUpInitComplete;
+	public bool eatGhostInitComplete;
+	public bool dieInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
 	public AudioClip preGameAudio;
 	public AudioClip normalAudio;
 	public AudioClip powerUpAudio;
@@ -24,7 +33,7 @@ public class GameController : MonoBehaviour {
 	public int lives;
 	public int level;
 
-	private int oldPelletCount, oldScore, oldLives;
+	public bool secondHasPassed;
 
 	public float preGameDuration;
 	public float preGameMaxDuration;
@@ -46,22 +55,25 @@ public class GameController : MonoBehaviour {
 
 	public float gameOverDuration;
 	public float gameOverMaxDuration;
-	
-	private bool preGameInitComplete;
-	private bool readyInitComplete;
-	private bool normalInitComplete;
-	private bool powerUpInitComplete;
-	private bool eatGhostInitComplete;
-	private bool dieInitComplete;
-	private bool winInitComplete;
-	private bool gameOverInitComplete;
-
-	private bool skipReadyWait;
 
 	public int numGhostsEaten;
 
+	private int oldPelletCount, oldScore, oldLives;
+	private bool skipReadyWait;
+	private float lastTime;
+
+
 	// Use this for initialization
 	void Start () {
+
+		preGameInitComplete = false;
+		readyInitComplete = false;
+		normalInitComplete = false;
+		powerUpInitComplete = false;
+		eatGhostInitComplete = false;
+		dieInitComplete = false;
+		winInitComplete = false;
+		gameOverInitComplete = false;
 
 		gameAudio = GetComponent<AudioSource> ();
 		gameState = GameStates.PREGAME;
@@ -74,14 +86,12 @@ public class GameController : MonoBehaviour {
 		pelletCount = 0;
 		pelletCountMax = 156;
 
-		oldScore = 0;
-		oldLives = 3;
-		oldPelletCount = 0;
-		
 		SetPelletCountText(pelletCount.ToString());
 		SetScoreText(score.ToString());
 		SetLivesText(lives.ToString());
 		SetWinText("");
+
+		secondHasPassed = false;
 
 		preGameDuration = 0;
 		preGameMaxDuration = 4.3f;
@@ -104,23 +114,21 @@ public class GameController : MonoBehaviour {
 		gameOverDuration = 0;
 		gameOverMaxDuration = 5.0f;
 
-		preGameInitComplete = false;
-		readyInitComplete = false;
-		normalInitComplete = false;
-		powerUpInitComplete = false;
-		eatGhostInitComplete = false;
-		dieInitComplete = false;
-		winInitComplete = false;
-		gameOverInitComplete = false;
-
-		skipReadyWait = false;
-
 		numGhostsEaten = 0;
+
+		oldPelletCount = 0;
+		oldScore = 0;
+		oldLives = 3;
+		skipReadyWait = false;
+		lastTime = Time.time;
 	
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
+
+		secondHasPassed = (Time.time - lastTime >= 1.0);
+		if (secondHasPassed) lastTime = Time.time;
 
 		if (pelletCount != oldPelletCount) {
 			oldPelletCount = pelletCount;
@@ -150,8 +158,17 @@ public class GameController : MonoBehaviour {
 				pelletCount = 0;
 
 				if (level == 1) {
+
 					lives = 3;
 					score = 0;
+					powerUpMaxDuration = 10.0f;
+
+				} else {
+
+					if (powerUpMaxDuration > 0) {
+						powerUpMaxDuration -= level;
+					}
+
 				}
 
 				SetWinText("Level " + level.ToString() + "\nGet Ready!");

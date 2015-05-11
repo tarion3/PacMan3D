@@ -3,6 +3,10 @@ using System.Collections;
 
 public class CameraController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
 	public GameObject player;
 
 	private GameController gameController;
@@ -14,12 +18,12 @@ public class CameraController : MonoBehaviour {
 
 	private float interpolationAlpha;
 
-	private bool preGameInitComplete;
-	private bool winInitComplete;
-	private bool gameOverInitComplete;
-
 	// Use this for initialization
 	void Start () {
+
+		preGameInitComplete = false;
+		winInitComplete = false;
+		gameOverInitComplete = false;
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 
@@ -30,10 +34,6 @@ public class CameraController : MonoBehaviour {
 		playPosition = new Vector3 (0.0f, 30.0f, -15.0f);
 
 		interpolationAlpha = 0;
-		
-		preGameInitComplete = false;
-		winInitComplete = false;
-		gameOverInitComplete = false;
 
 	}
 	
@@ -46,6 +46,7 @@ public class CameraController : MonoBehaviour {
 			
 			if (!preGameInitComplete) {
 
+				winInitComplete = false;
 				gameOverInitComplete = false;
 				preGameInitComplete = true;
 				
