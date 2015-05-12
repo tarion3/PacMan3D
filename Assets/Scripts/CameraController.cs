@@ -4,7 +4,6 @@ using System.Collections;
 public class CameraController : MonoBehaviour {
 
 	public bool preGameInitComplete;
-	public bool winInitComplete;
 	public bool gameOverInitComplete;
 
 	public GameObject player;
@@ -16,22 +15,27 @@ public class CameraController : MonoBehaviour {
 	private Vector3 origPosition;
 	private Vector3 playPosition;
 
+	private Vector3 origRotation;
+	private Vector3 playRotation;
+
 	private float interpolationAlpha;
 
 	// Use this for initialization
 	void Start () {
 
 		preGameInitComplete = false;
-		winInitComplete = false;
 		gameOverInitComplete = false;
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 
 		offset = transform.position - player.transform.position;
-		halfVector = new Vector3(0.5f, 1.0f, 0.5f);
+		halfVector = new Vector3 (0.5f, 1.0f, 0.5f);
 
 		origPosition = transform.position;
-		playPosition = new Vector3 (0.0f, 30.0f, -15.0f);
+		playPosition = new Vector3 (0.0f, 25.0f, -8.5f);
+
+		origRotation = transform.localEulerAngles;
+		playRotation = new Vector3 (80.0f, 0.0f, 0.0f);
 
 		interpolationAlpha = 0;
 
@@ -46,7 +50,6 @@ public class CameraController : MonoBehaviour {
 			
 			if (!preGameInitComplete) {
 
-				winInitComplete = false;
 				gameOverInitComplete = false;
 				preGameInitComplete = true;
 				
@@ -54,25 +57,10 @@ public class CameraController : MonoBehaviour {
 
 				interpolationAlpha = gameController.preGameDuration / gameController.preGameMaxDuration;
 				offset = ((1 - interpolationAlpha) * origPosition + interpolationAlpha * playPosition) - player.transform.position;
+				transform.localEulerAngles = (1 - interpolationAlpha) * origRotation + interpolationAlpha * playRotation;
 
 			}
 
-			break;
-
-		case GameController.GameStates.WIN:
-			
-			if (!winInitComplete) {
-				
-				preGameInitComplete = false;
-				winInitComplete = true;
-				
-			} else {
-				
-				interpolationAlpha = gameController.gameOverDuration / gameController.gameOverMaxDuration;
-				offset = ((1 - interpolationAlpha) * playPosition + interpolationAlpha * origPosition) - player.transform.position;
-				
-			}
-			
 			break;
 
 		case GameController.GameStates.GAMEOVER:
@@ -86,6 +74,7 @@ public class CameraController : MonoBehaviour {
 				
 				interpolationAlpha = gameController.gameOverDuration / gameController.gameOverMaxDuration;
 				offset = ((1 - interpolationAlpha) * playPosition + interpolationAlpha * origPosition) - player.transform.position;
+				transform.localEulerAngles = (1 - interpolationAlpha) * playRotation + interpolationAlpha * origRotation;
 				
 			}
 
@@ -93,7 +82,7 @@ public class CameraController : MonoBehaviour {
 			
 		}
 
-		transform.position = Vector3.Scale(player.transform.position + offset, halfVector);
+		transform.position = Vector3.Scale(player.transform.position, halfVector) + offset;
 
 	}
 

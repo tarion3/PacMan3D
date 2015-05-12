@@ -12,7 +12,7 @@ public class WallController : MonoBehaviour {
 	private Vector3 newScale;
 
 	private bool isSelectedWall;
-	private float scaleFactor;
+	private float interpolationAlpha;
 
 	// Use this for initialization
 	void Start () {
@@ -26,7 +26,7 @@ public class WallController : MonoBehaviour {
 		newScale = origScale;
 
 		isSelectedWall = false;
-		scaleFactor = 0;
+		interpolationAlpha = 0;
 
 	}
 	
@@ -51,48 +51,50 @@ public class WallController : MonoBehaviour {
 			
 			if (!powerUpInitComplete) {
 
-				isSelectedWall = Random.Range(0, 5) == 3;
-				scaleFactor = 9.0f / gameController.powerUpMaxDuration;
+				isSelectedWall = Random.Range(0, 2) == 1;
 
 				normalInitComplete = false;
 				powerUpInitComplete = true;
 				
 			}
 
-			if (isSelectedWall && gameController.secondHasPassed) {
+			if (isSelectedWall) {
+
+				interpolationAlpha = gameController.powerUpDuration / gameController.powerUpMaxDuration;
 
 				if (gameController.powerUpDuration < gameController.powerUpMaxDuration / 2.0f) {
 
 					if (origScale.x > origScale.z) {
-						if (newScale.x < scaleFactor * gameController.powerUpMaxDuration) {
-							newScale.x += scaleFactor;
-							transform.localScale = newScale;
-						}
+
+						newScale.x = (1 - interpolationAlpha) * origScale.x + interpolationAlpha * 14.0f;
+						transform.localScale = newScale;
+
 					} else {
-						if (newScale.z < scaleFactor * gameController.powerUpMaxDuration) {
-							newScale.z += scaleFactor;
-							transform.localScale = newScale;
-						}
+
+						newScale.z = (1 - interpolationAlpha) * origScale.z + interpolationAlpha * 14.0f;
+						transform.localScale = newScale;
+
 					}
-
+					
 				} else {
-
+					
 					if (origScale.x > origScale.z) {
-						if (newScale.x > origScale.x) {
-							newScale.x -= scaleFactor;
-							transform.localScale = newScale;
-						}
+						
+						newScale.x = (1 - interpolationAlpha) * 14.0f + interpolationAlpha * origScale.x;
+						transform.localScale = newScale;
+						
 					} else {
-						if (newScale.z > origScale.z) {
-							newScale.z -= scaleFactor;
-							transform.localScale = newScale;
-						}
+						
+						newScale.z = (1 - interpolationAlpha) * 14.0f + interpolationAlpha * origScale.z;
+						transform.localScale = newScale;
+						
 					}
 
 				}
 
 			}
-			
+
+
 			break;
 			
 		}

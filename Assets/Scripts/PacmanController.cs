@@ -209,7 +209,7 @@ public class PacmanController : MonoBehaviour {
 
 			gameController.pelletCount++;
 			gameController.score += 10;
-			
+		
 			if (!pacmanAudio.isPlaying || pacmanAudio.clip == eatPelletAudio) {
 
 				pacmanAudio.clip = eatPelletAudio;
@@ -239,19 +239,19 @@ public class PacmanController : MonoBehaviour {
 			if (gameController.gameState == GameController.GameStates.NORMAL) {
 
 				pacmanAudio.clip = deathAudio;
-				pacmanAudio.Play();
+				pacmanAudio.Play ();
 
 				gameController.gameState = GameController.GameStates.DIE;
 			}
 
-			// otherwise, pacman eats the ghost
-			else if (gameController.gameState == GameController.GameStates.POWERUP) {
+		// otherwise, pacman eats the ghost
+		else if (gameController.gameState == GameController.GameStates.POWERUP) {
 
 				gameController.numGhostsEaten++;
-				gameController.score += (int)((Mathf.Pow(2.0f, gameController.numGhostsEaten)) * 100.0f);
+				gameController.score += (int)((Mathf.Pow (2.0f, gameController.numGhostsEaten)) * 100.0f);
 
 				pacmanAudio.clip = eatGhostAudio;
-				pacmanAudio.Play();
+				pacmanAudio.Play ();
 
 				gameController.gameState = GameController.GameStates.EATGHOST;
 

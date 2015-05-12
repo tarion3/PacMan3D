@@ -7,6 +7,9 @@ public class PowerPelletController : MonoBehaviour {
 	public bool winInitComplete;
 	public bool gameOverInitComplete;
 
+	private bool isEaten;
+	private float lastBlinkTime;
+
 	private GameController gameController;
 	private MeshRenderer powerPelletRenderer;
 	private SphereCollider powerPelletCollider;
@@ -17,6 +20,9 @@ public class PowerPelletController : MonoBehaviour {
 		preGameInitComplete = false;
 		winInitComplete = false;
 		gameOverInitComplete = false;
+
+		isEaten = false;
+		lastBlinkTime = Time.time;
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 		powerPelletRenderer = GetComponent<MeshRenderer> ();
@@ -31,7 +37,9 @@ public class PowerPelletController : MonoBehaviour {
 		case GameController.GameStates.PREGAME:
 			
 			if (!preGameInitComplete) {
-				
+
+				isEaten = false;
+
 				powerPelletRenderer.enabled = true;
 				powerPelletCollider.enabled = true;
 
@@ -66,12 +74,20 @@ public class PowerPelletController : MonoBehaviour {
 			break;
 
 		}
-		
+
+		// blink
+		if (!isEaten && Time.time - lastBlinkTime > 0.5) {
+			lastBlinkTime = Time.time;
+			powerPelletRenderer.enabled = !powerPelletRenderer.enabled;
+		}
+
 	}
 
 	void OnTriggerEnter(Collider other) {
 
 		if (other.gameObject.CompareTag ("PacMan")) {
+
+			isEaten = true;
 
 			powerPelletRenderer.enabled = false;
 			powerPelletCollider.enabled = false;

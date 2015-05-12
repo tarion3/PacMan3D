@@ -69,8 +69,8 @@ public class GhostController : MonoBehaviour {
 		if (name == "Clyde") ghostDestination = new Vector3 (-10, 1, -15);
 
 		normalSpeed = 4.0f;
-		afraidSpeed = 1.0f;
-		deadSpeed = 10.0f;
+		afraidSpeed = 2.0f;
+		deadSpeed = 20.0f;
 		distanceFromPacman = 0;
 		distanceFromDestination = 0;
 		reachedGhostDestination = false;
