@@ -3,22 +3,30 @@ using System.Collections;
 
 public class PowerPelletController : MonoBehaviour {
 
+	public bool preGameInitComplete;
+	public bool winInitComplete;
+	public bool gameOverInitComplete;
+
+	private bool isEaten;
+	private float lastBlinkTime;
+
 	private GameController gameController;
 	private MeshRenderer powerPelletRenderer;
 	private SphereCollider powerPelletCollider;
-
-	private bool preGameInitComplete;
-	private bool gameOverInitComplete;
-
+	
 	// Use this for initialization
 	void Start () {
-		
+
+		preGameInitComplete = false;
+		winInitComplete = false;
+		gameOverInitComplete = false;
+
+		isEaten = false;
+		lastBlinkTime = Time.time;
+
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 		powerPelletRenderer = GetComponent<MeshRenderer> ();
 		powerPelletCollider = GetComponent<SphereCollider> ();
-
-		preGameInitComplete = false;
-		gameOverInitComplete = false;
 
 	}
 	
@@ -29,18 +37,31 @@ public class PowerPelletController : MonoBehaviour {
 		case GameController.GameStates.PREGAME:
 			
 			if (!preGameInitComplete) {
-				
+
+				isEaten = false;
+
 				powerPelletRenderer.enabled = true;
 				powerPelletCollider.enabled = true;
 
 				gameOverInitComplete = false;
+				winInitComplete = false;
 				preGameInitComplete = true;
 
 			}
 			
 			break;
 
-
+		case GameController.GameStates.WIN:
+			
+			if (!winInitComplete) {
+				
+				preGameInitComplete = false;
+				winInitComplete = true;
+				
+			}
+			
+			break;
+			
 		case GameController.GameStates.GAMEOVER:
 			
 			if (!gameOverInitComplete) {
@@ -53,23 +74,26 @@ public class PowerPelletController : MonoBehaviour {
 			break;
 
 		}
-		
+
+		// blink
+		if (!isEaten && Time.time - lastBlinkTime > 0.5) {
+			lastBlinkTime = Time.time;
+			powerPelletRenderer.enabled = !powerPelletRenderer.enabled;
+		}
+
 	}
 
 	void OnTriggerEnter(Collider other) {
 
 		if (other.gameObject.CompareTag ("PacMan")) {
 
-			// remove pellet
+			isEaten = true;
+
 			powerPelletRenderer.enabled = false;
 			powerPelletCollider.enabled = false;
 
-			gameController.pelletCount++;
-			gameController.score += 50;
-
-			// trigger game state change
 			gameController.gameState = GameController.GameStates.POWERUP;
-			gameController.powerUpDuration = 0;
+			gameController.powerUpInitComplete = false;
 		
 		}
 		
