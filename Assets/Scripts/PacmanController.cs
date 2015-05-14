@@ -18,7 +18,7 @@ public class PacmanController : MonoBehaviour {
 	public AudioClip deathAudio;
 	
 	private GameController gameController;
-	private MeshRenderer[] pacmanRenderers;
+	private MeshRenderer pacmanRenderer;
 
 	private AudioSource pacmanAudio;
 
@@ -44,7 +44,7 @@ public class PacmanController : MonoBehaviour {
 		gameOverInitComplete = false;
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
-		pacmanRenderers = GetComponentsInChildren<MeshRenderer> ();
+		pacmanRenderer = GetComponent<MeshRenderer> ();
 
 		pacmanAudio = GetComponent<AudioSource> ();
 
@@ -84,9 +84,7 @@ public class PacmanController : MonoBehaviour {
 			if (!readyInitComplete) {
 
 				transform.position = homePosition;
-				foreach(MeshRenderer renderer in pacmanRenderers) {
-					renderer.enabled = true;
-				}
+				pacmanRenderer.enabled = true;
 				curDirection = Vector3.zero;
 
 				normalInitComplete = false;
@@ -178,10 +176,8 @@ public class PacmanController : MonoBehaviour {
 			if (!winInitComplete) {
 				
 				transform.position = homePosition;
-				foreach(MeshRenderer renderer in pacmanRenderers) {
-					renderer.enabled = false;
-				}
-				
+				pacmanRenderer.enabled = false;
+
 				preGameInitComplete = false;
 				winInitComplete = true;
 				
@@ -194,9 +190,8 @@ public class PacmanController : MonoBehaviour {
 			if (!gameOverInitComplete) {
 
 				transform.position = homePosition;
-				foreach(MeshRenderer renderer in pacmanRenderers) {
-					renderer.enabled = false;
-				}
+				pacmanRenderer.enabled = false;
+
 				
 				preGameInitComplete = false;
 				gameOverInitComplete = true;
