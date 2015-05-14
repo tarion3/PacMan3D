@@ -55,9 +55,13 @@ public class CameraController : MonoBehaviour {
 				
 			} else {
 
-				interpolationAlpha = gameController.preGameDuration / gameController.preGameMaxDuration;
-				offset = ((1 - interpolationAlpha) * origPosition + interpolationAlpha * playPosition) - player.transform.position;
-				transform.localEulerAngles = (1 - interpolationAlpha) * origRotation + interpolationAlpha * playRotation;
+				if (gameController.level == 1) {
+
+					interpolationAlpha = gameController.preGameDuration / gameController.preGameMaxDuration;
+					offset = ((1 - interpolationAlpha) * origPosition + interpolationAlpha * playPosition) - player.transform.position;
+					transform.localEulerAngles = (1 - interpolationAlpha) * origRotation + interpolationAlpha * playRotation;
+
+				}
 
 			}
 
