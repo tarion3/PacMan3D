@@ -123,6 +123,16 @@ public class GameController : MonoBehaviour {
 		lastTime = Time.time;
 	
 	}
+
+	void Update() {
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+
+			Application.LoadLevel("start");
+
+		}
+
+	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
@@ -360,9 +370,13 @@ public class GameController : MonoBehaviour {
 			gameOverDuration += Time.deltaTime;
 
 			if (gameOverDuration >= gameOverMaxDuration) {
+
 				level = 1;
 				SetWinText("");
 				gameState = GameStates.PREGAME;
+
+				Application.LoadLevel("start");
+
 			}
 
 			break;

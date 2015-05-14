@@ -53,7 +53,7 @@ public class GhostController : MonoBehaviour {
 
 		gameController = GameObject.Find ("Game Controller").GetComponent<GameController> ();
 		
-		ghostRenderer = GetComponent<MeshRenderer> ();
+		ghostRenderer = GetComponentInChildren<MeshRenderer> ();
 		ghostCollider = GetComponent<BoxCollider> ();
 		ghostAgent = GetComponent<NavMeshAgent> ();
 		origGhostMaterial = ghostRenderer.material;
@@ -302,6 +302,8 @@ public class GhostController : MonoBehaviour {
 			break;
 
 		}
+
+		//transform.LookAt (ghostAgent.destination);
 
 	}
 	
